@@ -1,4 +1,3 @@
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { useEffect, useRef } from "react";
 import { Scene } from "three";
 import createR from "./threeJsLib/renderer";
@@ -7,9 +6,11 @@ import createLights from "./threeJsLib/lights";
 import cubeTexture from "./threeJsLib/cubeTexture";
 import createPlane, {
   bigBox,
+  moveBoxes,
   someBoxes,
 } from "./threeJsLib/createPlaneAndBoxes";
 import SpinnerDots from "./Spinner/SpinnerDots";
+import setOrbitControls from "./threeJsLib/setOrbitControls";
 
 function App() {
   const rendererRef = useRef();
@@ -42,27 +43,6 @@ function App() {
       }
     }
 
-    //move boxes
-    let change;
-    const moveBoxes = () => {
-      for (const box of boxes) {
-        if (box[3] !== 0) {
-          change = box[3] > 0 ? 0.2 : -0.2;
-          box[0].position.y += change;
-          box[3] += change;
-          if (box[3] > 30 || box[3] < -30) box[3] = 0;
-          continue;
-        }
-        if (box[0].position.y > 4 || box[0].position.y < 2) box[1] *= -1;
-        box[0].position.y += box[1];
-        if (box[0].position.x < -220 || box[0].position.x > 40) {
-          box[3] = box[0].position.x < -220 ? 1 : -1;
-          box[2] *= -1;
-        }
-        box[0].position.x += box[2];
-      }
-    };
-
     const onResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
@@ -72,8 +52,9 @@ function App() {
     //animate
     let frameId;
     const RAF = () => {
-      moveBoxes();
+      moveBoxes(boxes);
       renderer.render(scene, camera);
+      controls.update();
       frameId = requestAnimationFrame(RAF);
     };
 
@@ -83,10 +64,7 @@ function App() {
     const { domElement } = renderer;
 
     //add controls
-
-    const controls = new OrbitControls(camera, domElement);
-    controls.target.set(0, 20, 0);
-    controls.update();
+    const controls = setOrbitControls(camera, domElement);
 
     //add renderer to DOM
     const appender = () => {
@@ -94,8 +72,9 @@ function App() {
       rendererRef.current.appendChild(domElement);
     };
 
-    //background
+    //background, texture onLoad calls appender
     scene.background = cubeTexture(appender);
+
     //animate
     RAF();
 
@@ -103,27 +82,43 @@ function App() {
     return () => {
       cancelAnimationFrame(frameId);
       window.removeEventListener("resize", onResize);
-      // domElement.removeEventListener("DOMContentLoaded", start);
       domElement.remove();
     };
   }, []);
 
   return (
-    <div
-      ref={rendererRef}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: "100%",
-        height: "100%",
-      }}
-    >
-      <div ref={textRef}>
-        <h1>Loading</h1>
-        <SpinnerDots />
+    <>
+      <p
+        style={{
+          position: "fixed",
+          bottom: "0",
+          left: "0",
+          color: "whitesmoke",
+          fontSize: "10px",
+        }}
+      >
+        Left click (touch) rotates.
+        <br />
+        Right click (two touches) pans the camera.
+        <br />
+        Zoom in out enabled.
+      </p>
+      <div
+        ref={rendererRef}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "100%",
+          height: "100%",
+        }}
+      >
+        <div ref={textRef}>
+          <h1>Loading</h1>
+          <SpinnerDots />
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

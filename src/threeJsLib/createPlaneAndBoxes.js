@@ -6,6 +6,9 @@ import {
   BoxGeometry,
 } from "three";
 
+//Boxes
+
+//Big box
 export const bigBox = () => {
   const box = new Mesh(
     new BoxGeometry(2, 20, 2),
@@ -19,6 +22,7 @@ export const bigBox = () => {
   return box;
 };
 
+//multiple boxes
 export const someBoxes = (x, y) => {
   const box = new Mesh(
     new BoxGeometry(2, 2, 2),
@@ -38,6 +42,28 @@ export const someBoxes = (x, y) => {
   return box;
 };
 
+//move
+export const moveBoxes = boxes => {
+  let change;
+  for (const box of boxes) {
+    if (box[3] !== 0) {
+      change = box[3] > 0 ? 0.2 : -0.2;
+      box[0].position.y += change;
+      box[3] += change;
+      if (box[3] > 30 || box[3] < -30) box[3] = 0;
+      continue;
+    }
+    if (box[0].position.y > 4 || box[0].position.y < 2) box[1] *= -1;
+    box[0].position.y += box[1];
+    if (box[0].position.x < -220 || box[0].position.x > 40) {
+      box[3] = box[0].position.x < -220 ? 1 : -1;
+      box[2] *= -1;
+    }
+    box[0].position.x += box[2];
+  }
+};
+
+//Plane
 const createPlane = () => {
   const plane = new Mesh(
     new PlaneGeometry(200, 100, 2, 2),
