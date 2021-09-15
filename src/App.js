@@ -5,7 +5,10 @@ import createR from "./threeJsLib/renderer";
 import myCam from "./threeJsLib/camera";
 import createLights from "./threeJsLib/lights";
 import cubeTexture from "./threeJsLib/cubeTexture";
-import createPlane, { bigBox, someBoxes } from "./threeJsLib/createPlane";
+import createPlane, {
+  bigBox,
+  someBoxes,
+} from "./threeJsLib/createPlaneAndBoxes";
 import SpinnerDots from "./Spinner/SpinnerDots";
 
 function App() {
@@ -35,15 +38,28 @@ function App() {
       for (let y = -8; y < 8; y += 2) {
         const box = someBoxes(x, y);
         scene.add(box);
-        boxes.push([box, Math.random() * 2 > 1 ? 0.01 : -0.01]);
+        boxes.push([box, Math.random() * 2 > 1 ? 0.01 : -0.01, 0.5, 0]);
       }
     }
 
     //move boxes
+    let change;
     const moveBoxes = () => {
       for (const box of boxes) {
+        if (box[3] !== 0) {
+          change = box[3] > 0 ? 0.2 : -0.2;
+          box[0].position.y += change;
+          box[3] += change;
+          if (box[3] > 30 || box[3] < -30) box[3] = 0;
+          continue;
+        }
         if (box[0].position.y > 4 || box[0].position.y < 2) box[1] *= -1;
         box[0].position.y += box[1];
+        if (box[0].position.x < -220 || box[0].position.x > 40) {
+          box[3] = box[0].position.x < -220 ? 1 : -1;
+          box[2] *= -1;
+        }
+        box[0].position.x += box[2];
       }
     };
 

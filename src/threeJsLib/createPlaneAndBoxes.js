@@ -31,7 +31,7 @@ export const someBoxes = (x, y) => {
   box.position.set(
     Math.random() + x * 5,
     Math.random() + 2.0,
-    Math.random() + y * 5
+    Math.random() + y * 5 + 5
   );
   box.castShadow = true;
   box.receiveShadow = true;
