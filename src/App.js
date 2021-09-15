@@ -85,7 +85,8 @@ function App() {
       new PlaneGeometry(200, 100, 2, 2),
       new MeshStandardMaterial({
         color: "dodgerblue",
-        transparent: false,
+        transparent: true,
+        opacity: 0.3,
       })
     );
 
