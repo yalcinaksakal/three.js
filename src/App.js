@@ -1,135 +1,39 @@
-import "./App.css";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { useEffect, useRef } from "react";
-import {
-  AmbientLight,
-  BoxGeometry,
-  CubeTextureLoader,
-  DirectionalLight,
-  DoubleSide,
-  Mesh,
-  MeshStandardMaterial,
-  PCFShadowMap,
-  PerspectiveCamera,
-  PlaneGeometry,
-  Scene,
-  WebGLRenderer,
-} from "three";
+import { Scene } from "three";
+import createR from "./threeJsLib/renderer";
+import myCam from "./threeJsLib/camera";
+import createLights from "./threeJsLib/lights";
+import cubeTexture from "./threeJsLib/cubeTexture";
+import createPlane, { bigBox, someBoxes } from "./threeJsLib/createPlane";
+import SpinnerDots from "./Spinner/SpinnerDots";
 
 function App() {
   const rendererRef = useRef();
+  const textRef = useRef();
   useEffect(() => {
-    //set up renderer
-    const renderer = new WebGLRenderer();
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = PCFShadowMap;
-    renderer.setPixelRatio(window.devicePixelRatio);
-
-    const aspect = window.innerWidth / window.innerHeight;
-    renderer.setSize(window.innerWidth, window.innerHeight);
-
+    //renderer
+    const renderer = createR();
     //camera
-    const fov = 60;
-    const near = 1.0;
-    const far = 1000.0;
-    const camera = new PerspectiveCamera(fov, aspect, near, far);
-    camera.position.set(100, 150, 200);
-
+    const camera = myCam();
     //scene
     const scene = new Scene();
-
     //lights
-    let light = new DirectionalLight(0xffffff);
-    light.position.set(100, 100, 100);
-    light.target.position.set(0, 0, 0);
-    light.castShadow = true;
-    light.shadow.bias = -0.01;
-    light.shadow.mapSize.width = 2048;
-    light.shadow.mapSize.height = 2048;
-    light.shadow.camera.near = 1.0;
-    light.shadow.camera.far = 500;
-    light.shadow.camera.left = 200;
-    light.shadow.camera.right = -200;
-    light.shadow.camera.top = 200;
-    light.shadow.camera.bottom = -200;
-
-    scene.add(light);
-
-    light = new AmbientLight(0x404040);
-
-    scene.add(light);
-
-    //skybox
-    // 'px.png'
-    // 'nx.png'
-    // 'py.png'
-    // 'ny.png'
-    // 'pz.png'
-    // 'nz.png'
-    const loader = new CubeTextureLoader();
-    const texture = loader.load([
-      "SpaceboxCollection/Spacebox1/_left.png",
-      "SpaceboxCollection/Spacebox1/_right.png",
-
-      "SpaceboxCollection/Spacebox1/_top.png",
-      "SpaceboxCollection/Spacebox1/_bottom.png",
-
-      "SpaceboxCollection/Spacebox1/_front.png",
-      "SpaceboxCollection/Spacebox1/_back.png",
-    ]);
-
-    scene.background = texture;
+    const lights = createLights();
+    scene.add(lights.directional);
+    scene.add(lights.ambient);
 
     //add a plane
-    const plane = new Mesh(
-      new PlaneGeometry(200, 100, 2, 2),
-      new MeshStandardMaterial({
-        color: "dodgerblue",
-        transparent: true,
-        opacity: 0.3,
-      })
-    );
+    scene.add(createPlane());
 
-    plane.castShadow = false;
-    plane.receiveShadow = true;
-    plane.rotation.x = -Math.PI / 2;
-    plane.material.side = DoubleSide;
-    plane.position.set(-100, -10, 0);
-    scene.add(plane);
-
-    //add  a box
-    const box = new Mesh(
-      new BoxGeometry(2, 20, 2),
-      new MeshStandardMaterial({
-        color: "red",
-      })
-    );
-    box.position.set(-100, 2, 0);
-    box.castShadow = true;
-    box.receiveShadow = true;
-    scene.add(box);
-
-    ////////
+    //add the big box
+    scene.add(bigBox());
 
     //add boxes
     const boxes = [];
     for (let x = -8; x < 8; x += 2) {
       for (let y = -8; y < 8; y += 2) {
-        const box = new Mesh(
-          new BoxGeometry(2, 2, 2),
-          new MeshStandardMaterial({
-            color: `rgb(${Math.floor(Math.random() * 255)},${Math.floor(
-              Math.random() * 255
-            )},${Math.floor(Math.random() * 255)})`,
-          })
-        );
-        box.position.set(
-          Math.random() + x * 5,
-          Math.random() + 2.0,
-          Math.random() + y * 5
-        );
-        box.castShadow = true;
-        box.receiveShadow = true;
+        const box = someBoxes(x, y);
         scene.add(box);
         boxes.push([box, Math.random() * 2 > 1 ? 0.01 : -0.01]);
       }
@@ -169,7 +73,13 @@ function App() {
     controls.update();
 
     //add renderer to DOM
-    rendererRef.current.appendChild(domElement);
+    const appender = () => {
+      textRef.current.remove();
+      rendererRef.current.appendChild(domElement);
+    };
+
+    //background
+    scene.background = cubeTexture(appender);
     //animate
     RAF();
 
@@ -189,8 +99,15 @@ function App() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        width: "100%",
+        height: "100%",
       }}
-    ></div>
+    >
+      <div ref={textRef}>
+        <h1>Loading</h1>
+        <SpinnerDots />
+      </div>
+    </div>
   );
 }
 
