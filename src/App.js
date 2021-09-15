@@ -84,7 +84,7 @@ function App() {
     const plane = new Mesh(
       new PlaneGeometry(200, 100, 2, 2),
       new MeshStandardMaterial({
-        color: "rgb(206, 194, 123)",
+        color: "dodgerblue",
         transparent: false,
       })
     );
@@ -93,12 +93,12 @@ function App() {
     plane.receiveShadow = true;
     plane.rotation.x = -Math.PI / 2;
     plane.material.side = DoubleSide;
-    plane.position.set(-100, 0, 0);
+    plane.position.set(-100, -10, 0);
     scene.add(plane);
 
     //add  a box
     const box = new Mesh(
-      new BoxGeometry(2, 3, 2),
+      new BoxGeometry(2, 20, 2),
       new MeshStandardMaterial({
         color: "red",
       })
@@ -111,8 +111,9 @@ function App() {
     ////////
 
     //add boxes
-    for (let x = -8; x < 8; x++) {
-      for (let y = -8; y < 8; y++) {
+    const boxes = [];
+    for (let x = -8; x < 8; x += 2) {
+      for (let y = -8; y < 8; y += 2) {
         const box = new Mesh(
           new BoxGeometry(2, 2, 2),
           new MeshStandardMaterial({
@@ -123,14 +124,23 @@ function App() {
         );
         box.position.set(
           Math.random() + x * 5,
-          Math.random() * 14.0 + 2.0,
+          Math.random() + 2.0,
           Math.random() + y * 5
         );
         box.castShadow = true;
         box.receiveShadow = true;
         scene.add(box);
+        boxes.push([box, Math.random() * 2 > 1 ? 0.01 : -0.01]);
       }
     }
+
+    //move boxes
+    const moveBoxes = () => {
+      for (const box of boxes) {
+        if (box[0].position.y > 4 || box[0].position.y < 2) box[1] *= -1;
+        box[0].position.y += box[1];
+      }
+    };
 
     const onResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
@@ -141,6 +151,7 @@ function App() {
     //animate
     let frameId;
     const RAF = () => {
+      moveBoxes();
       renderer.render(scene, camera);
       frameId = requestAnimationFrame(RAF);
     };
