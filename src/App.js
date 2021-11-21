@@ -3,27 +3,29 @@ import { useEffect, useRef } from "react";
 import SpinnerDots from "./Spinner/SpinnerDots";
 
 import setScene from "./threeJsLib/setScene";
+// import setScene2 from "./world/world";
 
 function App() {
   const rendererRef = useRef();
   const textRef = useRef();
   useEffect(() => {
     const { domElement, onResize, animate } = setScene(textRef, rendererRef);
+    // setScene2(textRef, rendererRef);
 
-    //animate
     let frameId;
+
     const RAF = () => {
       animate();
       frameId = requestAnimationFrame(RAF);
     };
 
-    //resize
+    // resize;
     window.addEventListener("resize", onResize);
 
-    //start animation
+    // start animation
     RAF();
 
-    //cleanup
+    // cleanup
     return () => {
       cancelAnimationFrame(frameId);
       window.removeEventListener("resize", onResize);

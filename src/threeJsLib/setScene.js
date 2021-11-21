@@ -60,12 +60,23 @@ const setScene = (textRef, rendererRef) => {
   };
 
   //animate
-
+  // let renderRequested;
   const animate = () => {
+    // if (!renderRequested)
     moveBoxes(boxes);
+    // renderRequested = false;
     renderer.render(scene, camera);
     controls.update();
   };
+
+  // function requestRenderIfNotRequested() {
+  //   if (!renderRequested) {
+  //     renderRequested = true;
+  //     requestAnimationFrame(animate);
+  //   }
+  // }
+
+  // controls.addEventListener("change", requestRenderIfNotRequested);
 
   return { boxes, scene, camera, domElement, controls, onResize, animate };
 };
